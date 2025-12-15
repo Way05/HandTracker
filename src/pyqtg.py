@@ -48,6 +48,9 @@ class Graph:
     def updateScalar(self, scalar):
         self.scalar = scalar
 
+    def updateCameraZoom(self, scalar):
+        self.w.setCameraPosition(distance=scalar, elevation=20, azimuth=45)
+
     # Animation setup
     def update_wave(self):
         # Update Z with a time-based phase shift for animation
