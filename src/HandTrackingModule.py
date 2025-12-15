@@ -48,6 +48,13 @@ class handDetector:
                     h, w, _c = img.shape
                     cx, cy = int(lm.x * w), int(lm.y * h)
                     handList[handCount].append([id, cx, cy])
+                handCount += 1
+
+            if len(handList) == 2:
+                handList.reverse()
+
+            handCount = 0
+            for hand in self.results.multi_hand_landmarks:
                 if handCount == 0:
                     color = (255, 0, 0)
                 elif handCount == 1:
