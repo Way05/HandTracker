@@ -2,7 +2,6 @@ import cv2
 import threading
 import time
 import math
-import pyqtgraph as pg
 import HandTrackingModule as htm
 import pyqtg as pqtg
 
@@ -12,9 +11,10 @@ detector = htm.handDetector()
 
 stopEvent = threading.Event()
 
+graph = pqtg.Graph()
 
-def runGraph():
-    graph = pqtg.Graph()
+
+def runGraph(graph):
     graph.start_anim()
 
 
@@ -27,21 +27,24 @@ def calcDist(dataPoints):
     minThreshold = 20
     if dist <= minThreshold:
         dist = 0
-    # print(dist)
+
+    # map dist from 0-xxx to 0-10
+    dist = (dist - 0) * (10 - 0) / (300 - 0)
+    return dist
 
 
-def runOpenCV():
-    global lmList
+def runOpenCV(event, graph):
     prevTime = 0
     currTime = 0
-    while True:
+    while not event.is_set():
         _success, img = cap.read()
 
         img = detector.findHands(img)
         lmList = detector.findPosition(img)
 
         if len(lmList) != 0:
-            calcDist(lmList)
+            scalar = calcDist(lmList)
+            graph.updateScalar(scalar)
 
         currTime = time.time()
         fps = 1 / (currTime - prevTime)
@@ -54,18 +57,20 @@ def runOpenCV():
         cv2.imshow("Image", img)
         cv2.waitKey(1)
 
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("q"):
+            print("Exiting...")
+            event.set()
+            break
+    cap.release()
+    cv2.destroyAllWindows()
+    print("Cleanup complete.")
 
-t1 = threading.Thread(target=runGraph)
-t2 = threading.Thread(target=runOpenCV)
+
+t1 = threading.Thread(target=runOpenCV, args=[stopEvent, graph])
 
 t1.start()
-t2.start()
 
-try:
-    while not stopEvent.set():
-        time.sleep(0.1)
-except KeyboardInterrupt:
-    stopEvent.set()
+runGraph(graph)
 
 t1.join()
-t2.join()

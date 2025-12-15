@@ -62,7 +62,3 @@ class Graph:
         QtCore.QTimer.singleShot(10, lambda: self.timer.start(50))
         # self.timer.start(50)  # Update every 50 ms (adjust for speed)
         pg.exec()
-
-
-if __name__ == "__main__":
-    pg.exec()
