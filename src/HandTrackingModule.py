@@ -51,6 +51,13 @@ class handDetector:
                 cv2.circle(
                     img, (lmList[8][1], lmList[8][2]), 15, (255, 0, 0), cv2.FILLED
                 )
+                cv2.line(
+                    img,
+                    (lmList[4][1], lmList[4][2]),
+                    (lmList[8][1], lmList[8][2]),
+                    (255, 255, 255),
+                    1,
+                )
         return lmList
 
 
