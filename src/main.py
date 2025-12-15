@@ -4,6 +4,7 @@ import time
 import math
 import HandTrackingModule as htm
 import pyqtg as pqtg
+from pyqtg import Graph
 
 cap = cv2.VideoCapture(0)
 
@@ -11,14 +12,19 @@ detector = htm.handDetector()
 
 stopEvent = threading.Event()
 
-graph = pqtg.Graph()
+graph: Graph = pqtg.Graph()
 
 
-def runGraph(graph):
+def runGraph(graph: Graph):
     graph.start_anim()
 
 
-def calcDist(dataPoints):
+def linearMapRange(value, oldMin, oldMax, newMin, newMax):
+    return ((value - oldMin) / (oldMax - oldMin)) * (newMax - newMin) + newMin
+
+
+# dist for index to thumb
+def calcDist(dataPoints, hand=0):
     lm1 = dataPoints[4]
     lm1_pos = (lm1[1], lm1[2])
     lm2 = dataPoints[8]
@@ -27,24 +33,26 @@ def calcDist(dataPoints):
     minThreshold = 20
     if dist <= minThreshold:
         dist = 0
-
-    # map dist from 0-xxx to 0-10
-    dist = (dist - 0) * (10 - 0) / (300 - 0)
     return dist
 
 
-def runOpenCV(event, graph):
+def runOpenCV(event, graph: Graph):
     prevTime = 0
     currTime = 0
     while not event.is_set():
         _success, img = cap.read()
 
         img = detector.findHands(img)
-        lmList = detector.findPosition(img)
+        handList = detector.findPosition(img)
 
-        if len(lmList) != 0:
-            scalar = calcDist(lmList)
-            graph.updateScalar(scalar)
+        if len(handList) != 0:
+            L_scalar = calcDist(handList[0])
+            L_scalar = linearMapRange(L_scalar, 0, 300, 0, 10)
+            graph.updateScalar(L_scalar)
+        if len(handList) > 1:
+            R_scalar = calcDist(handList[1], hand=1)
+            R_scalar = linearMapRange(R_scalar, 0, 300, 20, 70)
+            graph.updateCameraZoom(R_scalar)
 
         currTime = time.time()
         fps = 1 / (currTime - prevTime)
