@@ -37,28 +37,45 @@ class handDetector:
         return img
 
     def findPosition(self, img, hand=0, draw=True):
-        lmList = []
+        handList = []
+        color = ()
+        handCount = 0
         if self.results.multi_hand_landmarks:
-            currHand = self.results.multi_hand_landmarks[hand]
-            for id, lm in enumerate(currHand.landmark):
-                h, w, _c = img.shape
-                cx, cy = int(lm.x * w), int(lm.y * h)
-                lmList.append([id, cx, cy])
-            if draw:
-                cv2.circle(
-                    img, (lmList[4][1], lmList[4][2]), 15, (255, 0, 0), cv2.FILLED
-                )
-                cv2.circle(
-                    img, (lmList[8][1], lmList[8][2]), 15, (255, 0, 0), cv2.FILLED
-                )
-                cv2.line(
-                    img,
-                    (lmList[4][1], lmList[4][2]),
-                    (lmList[8][1], lmList[8][2]),
-                    (255, 255, 255),
-                    1,
-                )
-        return lmList
+            for hand in self.results.multi_hand_landmarks:
+                # currHand = self.results.multi_hand_landmarks[hand]
+                handList.append([])
+                for id, lm in enumerate(hand.landmark):
+                    h, w, _c = img.shape
+                    cx, cy = int(lm.x * w), int(lm.y * h)
+                    handList[handCount].append([id, cx, cy])
+                if handCount == 0:
+                    color = (255, 0, 0)
+                elif handCount == 1:
+                    color = (0, 255, 0)
+                if draw:
+                    cv2.circle(
+                        img,
+                        (handList[handCount][4][1], handList[handCount][4][2]),
+                        15,
+                        color,
+                        cv2.FILLED,
+                    )
+                    cv2.circle(
+                        img,
+                        (handList[handCount][8][1], handList[handCount][8][2]),
+                        15,
+                        color,
+                        cv2.FILLED,
+                    )
+                    cv2.line(
+                        img,
+                        (handList[handCount][4][1], handList[handCount][4][2]),
+                        (handList[handCount][8][1], handList[handCount][8][2]),
+                        (255, 255, 255),
+                        1,
+                    )
+                handCount += 1
+        return handList
 
 
 def main():
@@ -71,7 +88,7 @@ def main():
         _success, img = cap.read()
 
         img = detector.findHands(img)
-        _lmList = detector.findPosition(img)
+        _handList = detector.findPosition(img)
 
         currTime = time.time()
         fps = 1 / (currTime - prevTime)
