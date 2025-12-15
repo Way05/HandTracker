@@ -9,6 +9,19 @@ prevTime = currTime = 0
 
 detector = htm.handDetector()
 
+
+def calcDist(dataPoints):
+    lm1 = dataPoints[4]
+    lm1_pos = (lm1[1], lm1[2])
+    lm2 = dataPoints[8]
+    lm2_pos = (lm2[1], lm2[2])
+    dist = math.sqrt(((lm1_pos[1] - lm2_pos[1]) ** 2 + (lm1_pos[0] - lm2_pos[0]) ** 2))
+    minThreshold = 20
+    if dist <= minThreshold:
+        dist = 0
+    print(dist)
+
+
 while True:
     _success, img = cap.read()
 
@@ -16,17 +29,7 @@ while True:
     lmList = detector.findPosition(img)
 
     if len(lmList) != 0:
-        lm1 = lmList[4]
-        lm1_pos = (lm1[1], lm1[2])
-        lm2 = lmList[8]
-        lm2_pos = (lm2[1], lm2[2])
-        dist = math.sqrt(
-            ((lm1_pos[1] - lm2_pos[1]) ** 2 + (lm1_pos[0] - lm2_pos[0]) ** 2)
-        )
-    minThreshold = 20
-    if dist <= minThreshold:
-        dist = 0
-    print(dist)
+        calcDist(lmList)
 
     currTime = time.time()
     fps = 1 / (currTime - prevTime)
