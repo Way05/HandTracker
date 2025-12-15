@@ -24,7 +24,7 @@ def linearMapRange(value, oldMin, oldMax, newMin, newMax):
 
 
 # dist for index to thumb
-def calcDist(dataPoints, hand=0):
+def calcDist(dataPoints):
     lm1 = dataPoints[4]
     lm1_pos = (lm1[1], lm1[2])
     lm2 = dataPoints[8]
@@ -34,6 +34,15 @@ def calcDist(dataPoints, hand=0):
     if dist <= minThreshold:
         dist = 0
     return dist
+
+
+def getHandPos(datapoints):
+    targetPoints = [0, 1, 2, 5, 9, 13, 17]
+    totalX = totalY = 0
+    for target in targetPoints:
+        totalX += datapoints[target][1]
+        totalY += datapoints[target][2]
+    return (totalX / len(targetPoints), totalY / len(targetPoints))
 
 
 def runOpenCV(event, graph: Graph):
@@ -50,9 +59,11 @@ def runOpenCV(event, graph: Graph):
             L_scalar = linearMapRange(L_scalar, 0, 300, 0, 10)
             graph.updateScalar(L_scalar)
         if len(handList) > 1:
-            R_scalar = calcDist(handList[1], hand=1)
-            R_scalar = linearMapRange(R_scalar, 0, 300, 20, 70)
-            graph.updateCameraZoom(R_scalar)
+            R_scalar = calcDist(handList[1])
+            R_scalar = linearMapRange(R_scalar, 0, 300, 50, 10)
+            Z_rot = getHandPos(handList[1])[0]
+            Z_rot = linearMapRange(Z_rot, 0, 640, 0, 360) * 2
+            graph.updateCamera(R_scalar, Z_rot)
 
         currTime = time.time()
         fps = 1 / (currTime - prevTime)

@@ -48,8 +48,8 @@ class Graph:
     def updateScalar(self, scalar):
         self.scalar = scalar
 
-    def updateCameraZoom(self, scalar):
-        self.w.setCameraPosition(distance=scalar, elevation=20, azimuth=45)
+    def updateCamera(self, distScalar, rotScalar):
+        self.w.setCameraPosition(distance=distScalar, elevation=20, azimuth=rotScalar)
 
     # Animation setup
     def update_wave(self):
