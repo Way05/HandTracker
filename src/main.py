@@ -36,6 +36,7 @@ def calcDist(dataPoints):
     return dist
 
 
+# averages center of hand
 def getHandPos(datapoints):
     targetPoints = [0, 1, 2, 5, 9, 13, 17]
     totalX = totalY = 0
@@ -61,9 +62,10 @@ def runOpenCV(event, graph: Graph):
         if len(handList) > 1:
             R_scalar = calcDist(handList[1])
             R_scalar = linearMapRange(R_scalar, 0, 300, 50, 10)
-            Z_rot = getHandPos(handList[1])[0]
-            Z_rot = linearMapRange(Z_rot, 0, 640, 0, 360) * 2
-            graph.updateCamera(R_scalar, Z_rot)
+            pos = getHandPos(handList[1])
+            Z_rot = linearMapRange(pos[0], 0, 640, 0, 360) * 2
+            XY_rot = linearMapRange(pos[1], 0, 640, -180, 180) * 2
+            graph.updateCamera(R_scalar, Z_rot, XY_rot)
 
         currTime = time.time()
         fps = 1 / (currTime - prevTime)
