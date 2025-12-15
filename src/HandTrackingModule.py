@@ -64,14 +64,14 @@ def main():
         _success, img = cap.read()
 
         img = detector.findHands(img)
-        lmList = detector.findPosition(img)
+        _lmList = detector.findPosition(img)
 
         currTime = time.time()
         fps = 1 / (currTime - prevTime)
         prevTime = currTime
 
         cv2.putText(
-            img, str(int(fps)), (10, 10), cv2.FONT_HERSHEY_COMPLEX, 3, (0, 0, 255), 3
+            img, str(int(fps)), (10, 60), cv2.FONT_HERSHEY_COMPLEX, 2, (0, 0, 255), 3
         )
 
         cv2.imshow("Image", img)
