@@ -1,13 +1,21 @@
 import cv2
-import mediapipe as mp
+import threading
 import time
 import math
+import pyqtgraph as pg
 import HandTrackingModule as htm
+import pyqtg as pqtg
 
 cap = cv2.VideoCapture(0)
-prevTime = currTime = 0
 
 detector = htm.handDetector()
+
+stopEvent = threading.Event()
+
+
+def runGraph():
+    graph = pqtg.Graph()
+    graph.start_anim()
 
 
 def calcDist(dataPoints):
@@ -19,25 +27,45 @@ def calcDist(dataPoints):
     minThreshold = 20
     if dist <= minThreshold:
         dist = 0
-    print(dist)
+    # print(dist)
 
 
-while True:
-    _success, img = cap.read()
+def runOpenCV():
+    global lmList
+    prevTime = 0
+    currTime = 0
+    while True:
+        _success, img = cap.read()
 
-    img = detector.findHands(img)
-    lmList = detector.findPosition(img)
+        img = detector.findHands(img)
+        lmList = detector.findPosition(img)
 
-    if len(lmList) != 0:
-        calcDist(lmList)
+        if len(lmList) != 0:
+            calcDist(lmList)
 
-    currTime = time.time()
-    fps = 1 / (currTime - prevTime)
-    prevTime = currTime
+        currTime = time.time()
+        fps = 1 / (currTime - prevTime)
+        prevTime = currTime
 
-    cv2.putText(
-        img, str(int(fps)), (10, 60), cv2.FONT_HERSHEY_COMPLEX, 2, (0, 0, 255), 3
-    )
+        cv2.putText(
+            img, str(int(fps)), (10, 60), cv2.FONT_HERSHEY_COMPLEX, 2, (0, 0, 255), 3
+        )
 
-    cv2.imshow("Image", img)
-    cv2.waitKey(1)
+        cv2.imshow("Image", img)
+        cv2.waitKey(1)
+
+
+t1 = threading.Thread(target=runGraph)
+t2 = threading.Thread(target=runOpenCV)
+
+t1.start()
+t2.start()
+
+try:
+    while not stopEvent.set():
+        time.sleep(0.1)
+except KeyboardInterrupt:
+    stopEvent.set()
+
+t1.join()
+t2.join()
